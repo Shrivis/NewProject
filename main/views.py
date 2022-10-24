@@ -1,13 +1,9 @@
-from main.models import Attendance, UserProfile, Request, Notification
+from main.models import UserProfile, Request, Notification
+from django.shortcuts import render
 from django.shortcuts import render, redirect
-from django.utils import timezone
 from django.contrib.auth.models import User, auth
 from django.contrib import messages
-import base64
-from django.core.files.base import ContentFile
 import json
-import datetime;
-from . import recogniser_algo
 # from .models import UserProfile
 # from django.views.decorators.csrf import csrf_exempt
 
@@ -16,25 +12,8 @@ def about(request):
     return render(request, 'about.html')
 
 
-def recognition(request):
-    if request.method == "POST":
-        _user = UserProfile.objects.get(user=request.user)
-        data = request.POST['image']
-        bias = int(request.POST['bias'])
-        format, imgstr = data.split(';base64,') 
-        ext = format.split('/')[-1] 
-        data = ContentFile(base64.b64decode(imgstr), name=f'{request.user.username}{datetime.date.today()}.' + ext)
-        if recogniser_algo.recognizer(str(request.POST['image']), _user.image.url):
-            att = Attendance(user_id=_user, image=data, date=datetime.date.today(), in_time=timezone.localtime(), out_time=timezone.localtime(), is_absent=False)
-            att.save()
-            msgDate = str(timezone.localtime())
-            messages.info(request, f'Hi, {request.user.first_name}, A very good morning to you. Your attedance has been recorde for {datetime.date.today()} at {msgDate[10:19]} Have a great day!')
-            return redirect('/')
-        else:
-            messages.info(request, f'It seems like there was an error with the last operation. Please take a moment to get another picture and try again. CONTACT SUPPORT TEAM IF ERROR PRESISTS!')
-            return render(request, 'index.html')
-    else:
-        return render(request, 'index.html')
+def index(request):
+    return render(request, 'index.html')
 
 
 def login(request):
@@ -69,8 +48,7 @@ def profile(request):
 
 
 def attendance(request):
-    att = Attendance.objects.filter(user_id=request.user.id).order_by("-date")
-    return render(request, 'attendance.html', { 'att':att })
+    return render(request, 'attendance.html')
 
 
 def graphs(request):
