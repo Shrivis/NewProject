@@ -1,4 +1,5 @@
-from main.models import UserProfile, Request, Notification
+from numpy import record
+from main.models import Attendance, UserProfile, Request, Notification
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User, auth
 from django.contrib import messages
@@ -16,7 +17,18 @@ def all_profile(request):
 
 def all_attendance(request):
     if request.user.is_superuser:
-        return render(request, 'all_attendance.html')
+        if request.method == "POST":
+            pass
+        else:
+            record = Attendance.objects.filter(subject='MCA4012')
+            total = UserProfile.objects.filter(branch='MCA')
+            data = {
+                'subject': 'MCA4012',
+                'date':record[0].date,
+                'present': len(record),
+                'total': 105
+            }
+            return render(request, 'all_attendance.html', {'record': record, 'data':data})
     else:
         return render(request, '404.html')
 
